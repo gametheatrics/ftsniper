@@ -3,23 +3,12 @@ const { createSpinner } = require('nanospinner')
 const { ethers } = require('ethers')
 const { buyShares, sellShares, checkBuyPrice, checkSellPrice } = require('./trading')
 const { getUserAddress } = require('./apiCalls');
-const userPrivateKey = process.env.USER_KEY
-const friendTechContractAddress = process.env.FRIENDTECH_CONTRACT
 const ftABI = require('./abift.json')
 const { input } = require('@inquirer/prompts')
 const axios = require('axios');
-require('./trading.js');
-require('./apiCalls.js');
+const userPrivateKey = process.env.USER_KEY
+const friendTechContractAddress = process.env.FRIENDTECH_CONTRACT
 
-let helpers = {
-    twitter: null,
-    quantity: null,
-    direction: null,
-    JWT: null,
-    buyPrice: null,
-    sellPrice: null,
-    lfg: null
-}
 
 const provider = new ethers.getDefaultProvider(process.env.RPC)
 
@@ -30,14 +19,29 @@ async function main() {
     const connectedFriendTech = new ethers.Wallet(userPrivateKey, provider)
     const friendTechContract = new ethers.Contract(friendTechContractAddress, ftABI, connectedFriendTech)
     console.log('Connected to RPC')
+    myJWT = process.env.JWT
 
-    helpers.JWT = await input({ message: 'Enter JWT: ' })
+    manualTrade(friendTechContract)
 
+}
+
+async function manualTrade(friendTechContract){
     while (true) {
+
+        let helpers = {
+            twitter: null,
+            quantity: null,
+            direction: null,
+            buyPrice: null,
+            sellPrice: null,
+            lfg: null
+        }
+         
+        
         helpers.twitter = await input({ message: 'twitter: ' })
 
         //input validation and checking if user exists
-        const userAddressDataAndStatus = await getUserAddress(helpers.twitter, helpers.JWT)
+        const userAddressDataAndStatus = await getUserAddress(helpers.twitter, myJWT)
         if (userAddressDataAndStatus[0] == false) {
             console.log(userAddressDataAndStatus[1])
             continue
@@ -93,7 +97,6 @@ async function main() {
             break
         }
     }
-
 }
 
 main()

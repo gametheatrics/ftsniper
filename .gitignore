@@ -5,7 +5,4 @@ coverage.json
 typechain
 typechain-types
 test.js
-# Hardhat files
-cache
-artifacts
 dict.txt
