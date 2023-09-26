@@ -75,9 +75,31 @@ async function checkSellPrice(contract, subject, numberOfShares) {
   }
 }
 
+/** TOOODOOOOOO
+ * Buys shares using Ethereum smart contracts.
+ *
+ * @param {object} contract - Contract object with signer
+ * @param {string} subject - Address of the subject
+ * @param {string} numberOfShares - Number of shares to buy
+ * @param {string} apeAmt - eth payload in gwei
+ */
+async function ape(contract, subject, numberOfShares, apeAmt) {
+  try {
+    // Calculate the buy price after fees
+    // Perform the share purchase transaction
+    const result = await contract.buyShares(subject, numberOfShares, { value: apeAmt })
+    return [true,buyPriceAfterFee]
+  } catch (error) {
+    return [error]
+  }
+}
+
+
+
 module.exports = {
   buyShares,
   checkBuyPrice,
   sellShares,
-  checkSellPrice
+  checkSellPrice,
+  ape
 }
