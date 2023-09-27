@@ -2,7 +2,8 @@ const axios = require('axios')
 const fs = require('fs')
 const dotenv = require('dotenv')
 const path = require('path')
-const filePath = path.join(__dirname, 'dict.txt') // Construct the absolute path
+const filePathDictionary = path.join(__dirname, 'dict.txt') // Construct the absolute path
+const filePathApe = path.join(__dirname, 'ape.txt') // Construct the absolute path
 
 // Specify the path to the .env file relative to test.js
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
@@ -18,10 +19,26 @@ const COMMON_HEADERS = {
   'Referer': 'https://www.friend.tech/'
 }
 
+function getApeStatus(userName) {
+  const data = fs.readFileSync(filePathApe, 'utf-8');
+  const lines = data.split('\n').filter(Boolean);
+
+  for (const line of lines) {
+    const [name, value] = line.split(',');
+
+    if (name.toLowerCase() === userName.toLowerCase()) {
+      return [name, value]; // Return the entire line as an array
+    }
+  }
+
+  return false; // Return null if no match is found
+}
+
+
 function writeDataToFile(address, userName, time) {
   const data = `${address.toLowerCase()}, ${userName.toLowerCase()}, ${time}\n`
 
-  fs.appendFile(filePath, data, (err) => {
+  fs.appendFile(filePathDictionary, data, (err) => {
     if (err) {
       console.error('Error appending data to file:', err)
       return false
@@ -31,7 +48,7 @@ function writeDataToFile(address, userName, time) {
 }
 
 function getLowerCaseUserName(address) {
-  const data = fs.readFileSync(filePath, 'utf-8')
+  const data = fs.readFileSync(filePathDictionary, 'utf-8')
   const lines = data.split('\n').filter(Boolean) // Split lines and remove empty lines
 
   for (const line of lines) {
@@ -46,7 +63,7 @@ function getLowerCaseUserName(address) {
 
 function getLowerCaseUserNameTime(address) {
   const lowerCaseAddr = address.toLowerCase()
-  const data = fs.readFileSync(filePath, 'utf-8')
+  const data = fs.readFileSync(filePathDictionary, 'utf-8')
   const lines = data.split('\n').filter(Boolean) // Split lines and remove empty lines
 
   for (const line of lines) {
@@ -61,7 +78,7 @@ function getLowerCaseUserNameTime(address) {
 
 function searchUserName(userName) {
   const lowerCaseUserName = userName.toLowerCase()
-  const data = fs.readFileSync(filePath, 'utf-8')
+  const data = fs.readFileSync(filePathDictionary, 'utf-8')
   const lines = data.split('\n').filter(Boolean) // Split lines and remove empty lines
 
   for (const line of lines) {
@@ -112,7 +129,7 @@ async function sync() {
   console.log('Syncing to current feed...')
   let i = 150000
 
-  const stepSizes = [50000, 5000, 1000, 200, 50, 12, 3, 1]
+  const stepSizes = [50000, 5000, 1000, 200, 50, 10, 5, 1]
   for (const stepSize of stepSizes) {
     while (true) {
       let response = await getUserById(i)
@@ -151,20 +168,20 @@ async function feed(){
     }
     console.log(response[1].id)
     const userAddr = (response[1].address).toLowerCase()
-    console.log(response[1].address)
+    //console.log(response[1].address)
     const userName = (response[1].twitterUsername).toLowerCase()
-    console.log(response[1].twitterUsername)
+    //console.log(response[1].twitterUsername)
     const currentTime = getCurrentTime()
-    console.log(currentTime)
+    //console.log(currentTime)
 
-    const writeStatus = writeDataToFile(userAddr,userName,currentTime,filePath)
+    const writeStatus = writeDataToFile(userAddr,userName,currentTime,filePathDictionary)
     if (writeStatus != true){
       "ERROR WITH FILE WRITING! ADDRESS"
       await new Promise((resolve) => setTimeout(resolve, 20000))
       break
 
     }
-    console.log('--------------------')
+    //console.log('--------------------')
     currentId++ // Increment i after waiting
     await new Promise((resolve) => setTimeout(resolve, getRandomWaitTime(0,1))) // Wait for some random time between 0 and 1
 
@@ -173,4 +190,4 @@ async function feed(){
 
 }
 
-module.exports = {feed, searchUserName, getLowerCaseUserName, getLowerCaseUserNameTime}
+module.exports = {feed, searchUserName, getLowerCaseUserName, getLowerCaseUserNameTime, getApeStatus}

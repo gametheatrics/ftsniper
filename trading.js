@@ -1,7 +1,15 @@
 const { ethers } = require('ethers')
+require('dotenv').config()
 
+function calculatePrice(number){
+    const gas = parseFloat(process.env.GAS)
+    let val = (number**2) / 16000 
+    val = val*0.05+val*0.05+val 
+    val = (val+gas).toFixed(18) 
+    return ethers.parseEther(val)
+}
 /**
- * Buys shares using Ethereum smart contracts.
+ * Buys shares
  *
  * @param {object} contract - Contract object with signer
  * @param {string} subject - Address of the subject
@@ -39,7 +47,7 @@ async function checkBuyPrice(contract, subject, numberOfShares) {
 }
 
 /**
- * Sells shares using Ethereum smart contracts.
+ * Sells shares 
  *
  * @param {object} contract - Contract object with signer
  * @param {string} subject - Address of the subject
@@ -75,31 +83,34 @@ async function checkSellPrice(contract, subject, numberOfShares) {
   }
 }
 
-/** TOOODOOOOOO
- * Buys shares using Ethereum smart contracts.
+/** Ape
  *
  * @param {object} contract - Contract object with signer
  * @param {string} subject - Address of the subject
- * @param {string} numberOfShares - Number of shares to buy
- * @param {string} apeAmt - eth payload in gwei
+ * @param {string} nthShare - nth share to buy (current supply)
  */
-async function ape(contract, subject, numberOfShares, apeAmt) {
+async function ape(contract, subject, nthShare) {
   try {
     // Calculate the buy price after fees
     // Perform the share purchase transaction
-    const result = await contract.buyShares(subject, numberOfShares, { value: apeAmt })
-    return [true,buyPriceAfterFee]
+    const apeAmt = calculatePrice(nthShare)
+    const result = await contract.buyShares(subject, 1, { value: apeAmt })
+    return [true,apeAmt]
   } catch (error) {
     return [error]
   }
 }
 
+async function spam(contract,subject,maxETH,nStart,nFinish){}
+
 
 
 module.exports = {
+  calculatePrice,
   buyShares,
   checkBuyPrice,
   sellShares,
   checkSellPrice,
-  ape
+  ape,
+  spam
 }

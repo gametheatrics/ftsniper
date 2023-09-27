@@ -3,54 +3,54 @@ const ethers = require('ethers')
 const ftABI = require('../abift.json')
 const dotenv = require('dotenv')
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
-const { getUserAddress, getDetailsFromAddress } = require('../apiCalls')
-const {getLowerCaseUserNameTime} = require('./dictManager')
 
+//const { getUserAddress, getDetailsFromAddress } = require('../apiCalls')
+const {ape} = require('../trading')
+const {getLowerCaseUserNameTime, getApeStatus} = require('./dictManager')
 function startTradeEventListener() {
-  // Specify the path to the .env file relative to this module
-  dotenv.config({ path: path.resolve(__dirname, '../.env') })
+
+  const userPrivateKey = process.env.USER_KEY
+  const friendTechContractAddress = process.env.FRIENDTECH_CONTRACT
 
   const provider = new ethers.JsonRpcProvider(process.env.RPC)
+  const connectedFriendTech = new ethers.Wallet(userPrivateKey, provider)
 
-  // Replace with the address of the contract that emits the "Trade" event
-  const contractAddress = '0xCF205808Ed36593aa40a44F10c7f7C2F67d4A4d4'
+    // Create a contract instance
 
-  // Create a contract instance
-  const contract = new ethers.Contract(contractAddress, ftABI, provider)
+  const friendTechContract = new ethers.Contract(friendTechContractAddress, ftABI, connectedFriendTech)
 
   function logCurrentTime() {
-    const now = new Date()
-    const hours = now.getHours().toString().padStart(2, '0')
-    const minutes = now.getMinutes().toString().padStart(2, '0')
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
-    console.log(`${hours}:${minutes}:${seconds}`);
+    const milliseconds = now.getMilliseconds().toString().padStart(3, '0'); // Get milliseconds
+  
+    console.log(`${hours}:${minutes}:${seconds}.${milliseconds}`);
   }
 
-  contract.on('Trade', async (trader, subject, isBuy, ethAmount, supply, event) => {
+  friendTechContract.on('Trade', async (trader, subject, isBuy, ethAmount, supply, event) => {
     if (
       trader === subject &&
-      isBuy === true &&
-      ethers.formatEther(ethAmount) === '0.000000000000000001'
+      isBuy === true 
+      && supply.toString() === '0'
     ) {
       async function processTrade() {
-        console.log(trader);
-  
+        //console.log(trader)
         const dictAddress = getLowerCaseUserNameTime(trader)
           if (!dictAddress==false){
               logCurrentTime()
               console.log(`*${dictAddress[1]}`)
               console.log(`*${dictAddress[0]}`)
-              //APE LOGIC 
-          } else {
-            //getting address from kosetto
-            const [success, payload] = await getDetailsFromAddress(trader)
-            const lowerAddress = payload.toLowerCase()
-            logCurrentTime()
-            console.log(lowerAddress)
-            
-        }
-        console.log('---------------')
-      }
+              console.log('---------------')
+
+              let apeStatus = getApeStatus(dictAddress[0])
+              if (!apeStatus==false){
+                console.log(apeStatus)
+                ape(friendTechContract,trader,apeStatus[1])
+              }
+          } 
+       }
 
       // Call the async function
       await processTrade();
