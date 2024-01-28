@@ -2,7 +2,7 @@
 
 Friend.tech bot that
 
-1)Builds dictionary from new users onboarding platform
+1) Builds dictionary from new users onboarding platform
 
 2) Lets you ape listings if users you specify join the platform 
 
